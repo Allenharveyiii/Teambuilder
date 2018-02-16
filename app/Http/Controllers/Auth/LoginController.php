@@ -25,7 +25,12 @@ class LoginController extends Controller
      *
      * @var string
      */
-    protected $redirectTo = '/home';
+     //CHANGE
+    // protected $redirectTo = '/home';
+    // to
+    // protected $redirectTo = '/';
+    // https://scotch.io/tutorials/user-authorization-in-laravel-54-with-spatie-laravel-permission
+    protected $redirectTo = '/';
 
     /**
      * Create a new controller instance.
