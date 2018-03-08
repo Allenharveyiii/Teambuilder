@@ -33,10 +33,11 @@ class kmeans
 	 */
 	public function __construct(int $k, array $data)
 	{
+		/// k must be positive, all data dimensions must be equal
 		if (0 < $k && $this->check_dims($data))
 		{
-			$this->initialize($k, $data);			// Sets k, data, dims, and cluster assignments
-			$this->update_clusters();
+			$this->initialize($k, $data);
+			//$this->update_clusters();
 		}
 		else
 		    $this->die("kmeans.php error: Invalid choice of k or data is inconsistently defined.");
@@ -87,7 +88,8 @@ class kmeans
                 $this->clusters[$i][$j] = [$j, 0];
         }
 
-        for ($i = 0; $i < $this->k; $i++)
+        $this->cluster_sizes[0] = $this->data_length;
+        for ($i = 1; $i < $this->k; $i++)
             $this->cluster_sizes[$i] = 0;
     }
 
@@ -140,14 +142,9 @@ class kmeans
             for ($j = 0; $j < $this->dims; $j++)
                 $this->means[$i][$j] = 0;
 
-        /// Iterate through each data point i
         for ($i = 0; $i < $this->data_length; $i++)
-        {
-            /// Iterate through each dimension j
             for ($j = 0; $j < $this->dims; $j++)
-                $this->means[$this->clusters[$i][0][0]][$j] += $this->data[$this->clusters[$i][0][0]][$j];  // Add data point to mean
-            //$this->cluster_sizes[$this->clusters[$i][0][0]]++;    // Why do this? Not here...
-        }
+                $this->means[$this->clusters[$i][0][0]][$j] += $this->data[$i][$j];  // Add each data point to mean that it is assigned to
 
         /// Iterate through each mean dividing by size. If size is zero, redefine mean as random point.
         for ($i = 0; $i < $this->k; $i++)
@@ -157,14 +154,6 @@ class kmeans
             else
                 for ($j = 0; $j < $this->dims; $j++)
                     $this->means[$i][$j] /= $this->cluster_sizes[$i];
-
-        /// Debug
-        for ($i = 0; $i < $this->k; $i++)
-        {
-            print ("\nCluster ".$i." of size ".$this->cluster_sizes[$i]."\n");
-            for ($j = 0; $j < $this->dims; $j++)
-                print (number_format($this->means[$i][$j],2) . " ");
-        }
         return $old_means == $this->means ? true : false;   // Return true if no change occurs
     }
 
@@ -178,7 +167,7 @@ class kmeans
 	 */
 	private function update_clusters()
 	{
-        print ("\nClusters BEFORE sorting");
+        print ("\n\nClusters BEFORE sorting");
         for ($i = 0; $i < $this->k; $i++)
             $this->display_cluster($i);
 
@@ -186,19 +175,17 @@ class kmeans
         for ($i = 0; $i < $this->k; $i++)
             $this->cluster_sizes[$i] = 0;
 
-        /// Iterate through each data point i
 		for ($i = 0; $i < $this->data_length; $i++)
         {
-            /// Iterate through each cluster j
             for ($j = 0; $j < $this->k; $j++)
                 $this->clusters[$i][$j] = [$j, $this->variance($j, $i)];    // Set variance for each cluster j to data point i
-            //$this->sort_cluster($i, false);
+            $this->sort_cluster($i, false);							// True sorts on cluster id; False sorts on variance
             $this->cluster_sizes[$this->clusters[$i][0][0]]++;              // Increment the size of cluster in which data point i is now assigned to
         }
 
-        print ("\nClusters AFTER sorting");
-        for ($i = 0; $i < $this->k; $i++)
-            $this->display_cluster($i);
+//        print ("\n\nClusters AFTER sorting");
+//        for ($i = 0; $i < $this->k; $i++)
+//            $this->display_cluster($i);
 	}
 
     /**
@@ -223,9 +210,9 @@ class kmeans
             {
                 if ($this->clusters[$point_index][$i + 1][$col] < $this->clusters[$point_index][$i][$col])
                 {
-                    $temp = array($this->clusters[$point_index][$i]);
-                    $this->clusters[$point_index][$i]     = array($this->clusters[$point_index][$i + 1]);
-                    $this->clusters[$point_index][$i + 1] = array($temp);
+                    $temp = $this->clusters[$point_index][$i];
+                    $this->clusters[$point_index][$i]     = $this->clusters[$point_index][$i + 1];
+                    $this->clusters[$point_index][$i + 1] = $temp;
                     $changed = true;
                 }
             }
@@ -234,20 +221,36 @@ class kmeans
             {
                 if ($this->clusters[$point_index][$i][$col] < $this->clusters[$point_index][$i - 1][$col])
                 {
-                    $temp = array($this->clusters[$point_index][$i]);
-                    $this->clusters[$point_index][$i]     = array($this->clusters[$point_index][$i - 1]);
-                    $this->clusters[$point_index][$i - 1] = array($temp);
+                    $temp = $this->clusters[$point_index][$i];
+                    $this->clusters[$point_index][$i]     = $this->clusters[$point_index][$i - 1];
+                    $this->clusters[$point_index][$i - 1] = $temp;
                     $changed = true;
                 }
             }
             $start++;
         }
+		/*for ($i = 1; $i < $this->k; $i++)
+		{
+			if ($this->clusters[$point_index][$i][$col] < $this->clusters[$point_index][0][$col])
+			{
+				$temp = $this->clusters[$point_index][0];
+				$this->clusters[$point_index][0]  = $this->clusters[$point_index][$i];
+				$this->clusters[$point_index][$i] = $temp;
+			}
+		}*/
     }
 
     public function run()
     {
-        $this->update_means();
-        $this->update_clusters();
+        $notchanged = false;
+        for ($i = 0; $i < 25 && !$notchanged; $i++)
+        {
+            print("\nStep ".$i);
+            $notchanged = $this->update_means();
+            $this->update_clusters();
+            if ($notchanged)
+                print ("\nIt converged.");
+        }
     }
 
     public function display_cluster(int $cluster_index)
@@ -262,7 +265,7 @@ class kmeans
     {
         $value = "[";
         for ($i = 0; $i < $this->dims; $i++)
-            $value .= " ".number_format($this->means[$mean_index][$i],2);
+            $value .= " ".number_format($this->means[$mean_index][$i], 2);
         $value .= "]";
         return $value;
     }
