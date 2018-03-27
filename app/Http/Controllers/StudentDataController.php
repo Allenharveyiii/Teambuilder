@@ -7,12 +7,18 @@ use Illuminate\Http\Request;
 
 use App\StudentData;
 use Auth;
+
+//Importing laravel-permission models
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
 use Session;
+
+
 
 class StudentDataController extends Controller {
 
     public function __construct() {
-        $this->middleware(['auth', 'clearance'])->except('index', 'show');
+       $this->middleware('auth');
     }
 
     /**
@@ -22,9 +28,11 @@ class StudentDataController extends Controller {
      */
 
     public function index() {
-        $posts = StudentData::orderby('id', 'desc')->paginate(5); //show only 5 items at a time in descending order
 
-        return view('studentdata.index', compact('posts'));
+        $studentdata = StudentData::orderby('id', 'desc')->paginate(5); //show only 5 items at a time in descending order
+
+        
+        return view('studentdata.index', compact('studentdata'));
     }
 
     /**
@@ -33,7 +41,7 @@ class StudentDataController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function create() {
-        return view('posts.create');
+        return view('studentdata.create');
     }
 
     /**
@@ -47,17 +55,31 @@ class StudentDataController extends Controller {
     //Validating title and body field
         $this->validate($request, [
             'title'=>'required|max:100',
-            'body' =>'required',
+            'body' =>'required|file:txt'
+            //'body' =>'required|max:100'
             ]);
 
-        $title = $request['title'];
-        $body = $request['body'];
+        $post = new StudentData;
 
-        $post = StudentData::create($request->only('title', 'body'));
+
+        $post->title = $request->input('title');
+        $post->body = file_get_contents($request->file('body'));
+        $post->save();
+
+
+
+       // $title = $request['title'];
+        //$body = $request['body'];
+        
+        //$post = StudentData::create($request->only('title', 'body'));
+
+        //$post = StudentData::create($request['title']);
+
+
 
     //Display a successful message upon save
-        return redirect()->route('posts.index')
-            ->with('flash_message', 'Article,
+        return redirect()->route('studentdata.index')
+            ->with('flash_message', 'Class,
              '. $post->title.' created');
     }
 
@@ -70,7 +92,7 @@ class StudentDataController extends Controller {
     public function show($id) {
         $post = StudentData::findOrFail($id); //Find post of id = $id
 
-        return view ('posts.show', compact('post'));
+        return view ('studentdata.show', compact('post'));
     }
 
     /**
@@ -82,7 +104,7 @@ class StudentDataController extends Controller {
     public function edit($id) {
         $post = StudentData::findOrFail($id);
 
-        return view('posts.edit', compact('post'));
+        return view('studentdata.edit', compact('post'));
     }
 
     /**
@@ -95,7 +117,7 @@ class StudentDataController extends Controller {
     public function update(Request $request, $id) {
         $this->validate($request, [
             'title'=>'required|max:100',
-            'body'=>'required',
+            'body' =>'required|file:txt'
         ]);
 
         $post = StudentData::findOrFail($id);
@@ -103,7 +125,7 @@ class StudentDataController extends Controller {
         $post->body = $request->input('body');
         $post->save();
 
-        return redirect()->route('posts.show', 
+        return redirect()->route('studentdata.show', 
             $post->id)->with('flash_message', 
             'Article, '. $post->title.' updated');
 
@@ -116,10 +138,10 @@ class StudentDataController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function destroy($id) {
-        $post = Post::findOrFail($id);
+        $post = StudentData::findOrFail($id);
         $post->delete();
 
-        return redirect()->route('posts.index')
+        return redirect()->route('studentdata.index')
             ->with('flash_message',
              'Article successfully deleted');
 

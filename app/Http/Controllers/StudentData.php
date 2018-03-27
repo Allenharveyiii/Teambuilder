@@ -10,4 +10,9 @@ class StudentData extends Model
     protected $fillable = [
         'title', 'body'
     ];
+
+
+
+
+
 }

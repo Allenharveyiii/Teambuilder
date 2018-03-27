@@ -26,4 +26,8 @@ Route::resource('roles', 'RoleController');
 
 Route::resource('permissions', 'PermissionController');
 
-Route::resource('posts', 'StudentDataController');
+Route::resource('studentdata', 'StudentDataController');
+
+
+
+
