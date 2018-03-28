@@ -18,12 +18,14 @@
 class kmeans
 {
 	private $data;		    // Array of multidimensional points to assign to clusters; data = [[x0, x1, ...], [x0, x1, ...], ...]
-    private $data_length;   // Number of data points in data
+	//private $position;		// Array of current positions for data points; position = [x0, x1, ...]
+	private $data_length;   // Number of data points in data
     private $dims;          // Number of dimensions in each data point
     private $k;			    // Number of clusters to assign data items to
 	private $means;	    	// Array of k points representing the mean of data points assigned to each indexed mean; means = [[x0, x1, ...], [x0, x1, ...], ...]
     private $clusters;      // Array of integers indicating which cluster each point is assigned to; data[i] = [[c0, vi0], [c1, vi1], ...] is a priority queue of clusters with variances
 	private $cluster_sizes; // Array of integers indicating how many data points are assigned to each cluster
+	private $max_cluster_size;
 
     /***************************************************************************
      * kmeans (int, [float[]])
@@ -52,7 +54,7 @@ class kmeans
      */
 	private function check_dims(array $data)
 	{
-		$data_length = sizeof($data);
+		$data_length = sizeof($data);		// Number of data points (Not this data length)
 		$sublength   = sizeof($data[0]);	// Number of dimensions in each data point
 		$result	     = true;				// Result of each comparison to return
 		for ($i = 1; $i < $data_length && $result; $i++)
@@ -97,6 +99,32 @@ class kmeans
         $this->cluster_sizes[0] = $this->data_length;
         for ($i = 1; $i < $this->k; $i++)
             $this->cluster_sizes[$i] = 0;
+
+		$this->max_cluster_size = (int)($this->data_length / $this->k);
+		if ($this->data_length % $this->k == 0)
+			$this->max_cluster_size++;
+    }
+
+    public function to_string()
+    {
+        $summary = "";
+        for ($i = 0; $i < $this->k; $i++) {
+            $summary .= "====================\ncluster[" . $i . "] = [ ";
+            for ($j = 0; $j < $this->dims; $j++)
+                $summary .= number_format($this->means[$i][$j], 1) . "  ";
+            $summary .= "]\nsize: ".$this->cluster_sizes[$i]."\n--------------------\n";
+            for ($j = 0; $j < $this->data_length; $j++)
+            {
+                if ($i == $this->clusters[$j][0][0])
+                {
+                    $summary .= "[ ";
+                    for ($k = 0; $k < $this->dims; $k++)
+                        $summary .= number_format($this->data[$j][$k],1) . "  ";
+                    $summary .= "]\n";
+                }
+            }
+        }
+        return $summary;
     }
 
 	/***************************************************************************
@@ -114,10 +142,11 @@ class kmeans
 	 * variance (int, int):float
 	 ***************************************************************************
 	 * Determine the variance of a point to a cluster (mean).
-	 * @param int $cluster_index
-	 * @param int $point_index
-	 * @return float $value
-	 */
+     * @param int $cluster_index
+     * @param int $point_index
+     * @return float|int
+     * @throws Exception
+     */
     public function variance(int $cluster_index, int $point_index)
     {
 		if (0 <= $cluster_index && $cluster_index < $this->k && 0 <= $point_index && $point_index < $this->data_length)
@@ -136,10 +165,11 @@ class kmeans
      ***************************************************************************
 	 * Determine the Euclidean distance from a data point to a given cluster
 	 * (mean).
-	 * @param int $cluster_index
-	 * @param int $point_index
-	 * @return float
-	 */
+     * @param int $cluster_index
+     * @param int $point_index
+     * @return float
+     * @throws Exception
+     */
     public function distance(int $cluster_index, int $point_index)
     {
         return sqrt($this->variance($cluster_index, $point_index));
@@ -203,10 +233,20 @@ class kmeans
         {
             for ($j = 0; $j < $this->k; $j++)
                 $this->clusters[$i][$j] = [$j, $this->variance($j, $i)];    // Set variance for each cluster j to data point i
-            $this->sort_cluster($i, 1);										// 0 sorts on cluster id; 1 sorts on variance
+            $this->sort_cluster($i, 1);								// 0 sorts on cluster id; 1 sorts on variance
             $this->cluster_sizes[$this->clusters[$i][0][0]]++;              // Increment the size of cluster in which data point i is now assigned to
         }
 	}
+	
+	private function update_cluster_size(int $cluster_index)
+    {
+        if (0 <= $cluster_index && $cluster_index < $this->k)
+        {
+            $this->cluster_sizes[$cluster_index] = 0;
+            for ($i = 0; $i < $this->data_length; $i++)
+                $this->cluster_sizes[$cluster_index]++;
+        }
+    }
 
     /***************************************************************************
 	 * sort_cluster(int, int):void
@@ -260,6 +300,73 @@ class kmeans
 		}
     }
 
+	private function check_sizes()
+	{
+		$result = true;	// True if all cluster sizes are "ideal," otherwise false
+		for ($i = 0; $i < $this->k && $result; $i++)
+			if ($this->cluster_sizes[$i] < $this->max_cluster_size - 1 || $this->max_cluster_size < $this->cluster_sizes[$i])
+				$result = false;
+		return $result;
+	}
+
+	private function set_ratios()
+	{
+		for ($i = 0; $i < $this->data_length; $i++)
+		{
+		    for ($j = 0; $j < $this->k - 1; $j++)
+                $this->clusters[$i][$j][2] = $this->clusters[$i][$j][1] / $this->clusters[$i][$j + 1][1];
+            $this->clusters[$i][$this->k - 1][2] = -1;
+        }
+	}
+
+	private function index_max_ratio(int $cluster_index)
+	{
+		/// Initialize point index to first point in cluster
+		$point_index = -1;	// Index of point having largest ratio in assigned cluster
+		for ($i = 0; $i < $this->data_length && $point_index == -1; $i++)
+			if ($this->clusters[$i][0][0] == $cluster_index)
+				$point_index = $i;
+
+		/// Search for point index having largest ratio in assigned cluster
+		for ($i = $point_index + 1; $i < $this->data_length; $i++)
+			if ($this->clusters[$i][0][0] == $cluster_index && $this->clusters[$point_index][0][2] < $this->clusters[$i][0][2])
+				$point_index = $i;
+		return $point_index;
+	}
+	
+	private function index_max_cluster()
+    {
+        $index = 0;
+        for ($i = 1; $i < $this->k; $i++)
+            if ($this->cluster_sizes[$index] < $this->cluster_sizes[$i])
+                $index = $i;
+        return $index;
+    }
+
+	private function prune()
+	{
+	    $this->set_ratios();
+	    $iterations = 0;
+		while (!$this->check_sizes() && $iterations < 100)
+		{
+		    $cluster_index = $this->index_max_cluster();
+		    $point_index = $this->index_max_ratio($cluster_index);
+		    if ($this->max_cluster_size <= $this->cluster_sizes[$cluster_index] && $this->clusters[$point_index][0][2] != -1)
+		    {
+                $this->cluster_sizes[$cluster_index]--;
+                $this->cluster_sizes[$this->clusters[$point_index][1][0]]++;
+                $temp = $this->clusters[$point_index][0];
+                for ($i = 0; $i < $this->k - 1; $i++)
+                    $this->clusters[$point_index][$i] = $this->clusters[$point_index][$i + 1];
+                $this->clusters[$point_index][$this->k - 1] = $temp;
+                $this->clusters[$point_index][$this->k - 1][2] = -1;
+            }
+            else
+                break;
+			$iterations++;
+		}
+	}
+
 	/***************************************************************************
 	 * run():[int]
 	 ***************************************************************************
@@ -279,6 +386,9 @@ class kmeans
             $this->update_clusters();
             $iterations++;
         }
+        //print("before pruning\n".$this->to_string()."\n");
+		$this->prune();
+        //print("after pruning\n".$this->to_string()."\n");
         $clusters = array();
         for ($i = 0; $i < $this->data_length; $i++)
             $clusters[$i] = $this->clusters[$i][0][0];
@@ -287,10 +397,8 @@ class kmeans
 }
 
 /// Driver
-$k = 5;
-$data_length = 1000;
-$dims = 3;
-//$data = array([3], [5], [9], [8], [2], [3], [7], [8], [4], [9]);
+$data_length = 100;
+$dims = 2;
 $data = array();
 for ($i = 0; $i < $data_length; $i++)
 {
@@ -298,12 +406,19 @@ for ($i = 0; $i < $data_length; $i++)
 	for ($j = 0; $j < $dims; $j++)
 		$data[$i][$j] = rand(0, getrandmax()) / getrandmax();
 }
+//$data = array([1], [3], [9], [0], [8], [2], [1], [8], [5], [2]);
+//$data_length = sizeof($data);
+//$dims = sizeof($data[0]);
+$k = 3;
+
 $kmeans   = new kmeans($k, $data);
 $clusters = $kmeans->run();
-for ($i = 0; $i < sizeof($data); $i++)
-{
-	print ("\nData point ".$i." = [".number_format($data[$i][0] ,1));
-	for ($j = 1; $j < $dims; $j++)
-		print(" ".number_format($data[$i][$j], 1));
-	print("] is in cluster ".$clusters[$i]);
-}
+print($kmeans->to_string());
+//for ($i = 0; $i < sizeof($data); $i++)
+//{
+//	print ("\nData[".$i."] = [".number_format($data[$i][0], 1));
+//	for ($j = 1; $j < $dims; $j++)
+//		print(" ".number_format($data[$i][$j], 1));
+//	print("] is in cluster ".$clusters[$i]);
+//}
+
