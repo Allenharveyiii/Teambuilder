@@ -17,15 +17,14 @@
   */
 class kmeans
 {
-	private $data;		    // Array of multidimensional points to assign to clusters; data = [[x0, x1, ...], [x0, x1, ...], ...]
-	//private $position;		// Array of current positions for data points; position = [x0, x1, ...]
-	private $data_length;   // Number of data points in data
-    private $dims;          // Number of dimensions in each data point
-    private $k;			    // Number of clusters to assign data items to
-	private $means;	    	// Array of k points representing the mean of data points assigned to each indexed mean; means = [[x0, x1, ...], [x0, x1, ...], ...]
-    private $clusters;      // Array of integers indicating which cluster each point is assigned to; data[i] = [[c0, vi0], [c1, vi1], ...] is a priority queue of clusters with variances
-	private $cluster_sizes; // Array of integers indicating how many data points are assigned to each cluster
-	private $max_cluster_size;
+	private $data;		    	// Array of multidimensional points to assign to clusters; data = [[x0, x1, ...], [x0, x1, ...], ...]
+	private $data_length;   	// Number of data points in data
+    private $dims;          	// Number of dimensions in each data point
+    private $k;			    	// Number of clusters to assign data items to
+	private $means;	    		// Array of k points representing the mean of data points assigned to each indexed mean; means = [[x0, x1, ...], [x0, x1, ...], ...]
+    private $clusters;      	// Array of integers indicating which cluster each point is assigned to; data[i] = [[c0, vi0], [c1, vi1], ...] is a priority queue of clusters with variances
+	private $cluster_sizes; 	// Array of integers indicating how many data points are assigned to each cluster
+	private $max_cluster_size;	// Largest cluster size possible given k and data length
 
     /***************************************************************************
      * kmeans (int, [float[]])
@@ -93,18 +92,23 @@ class kmeans
         {
             $this->clusters[$i] = array();
             for ($j = 0; $j < $this->k; $j++)
-                $this->clusters[$i][$j] = [$j, 0];
+                $this->clusters[$i][$j] = [$j, 0, 0];
         }
 
         $this->cluster_sizes[0] = $this->data_length;
         for ($i = 1; $i < $this->k; $i++)
             $this->cluster_sizes[$i] = 0;
 
-		$this->max_cluster_size = (int)($this->data_length / $this->k);
-		if ($this->data_length % $this->k == 0)
-			$this->max_cluster_size++;
+		/// Set the max cluster size as ceiling of data length / k
+		$this->max_cluster_size = (int)ceil($this->data_length / $this->k);
     }
 
+	/***************************************************************************
+	 * to_string():string
+	 ***************************************************************************
+	 * Returns a summary of the clusters.
+	 * @return string $summary
+	 */
     public function to_string()
     {
         $summary = "";
@@ -237,7 +241,12 @@ class kmeans
             $this->cluster_sizes[$this->clusters[$i][0][0]]++;              // Increment the size of cluster in which data point i is now assigned to
         }
 	}
-	
+
+	/***************************************************************************
+	 * update_cluster_size(int):void
+	 ***************************************************************************
+	 *
+	 */
 	private function update_cluster_size(int $cluster_index)
     {
         if (0 <= $cluster_index && $cluster_index < $this->k)
@@ -300,6 +309,13 @@ class kmeans
 		}
     }
 
+	/***************************************************************************
+	 * check_sizes():bool
+	 ***************************************************************************
+	 * Checks the sizes of the clusters. Returns true if all clusters are of
+	 * optimal size and false if otherwise.
+	 * @return bool $result
+	 */
 	private function check_sizes()
 	{
 		$result = true;	// True if all cluster sizes are "ideal," otherwise false
@@ -309,16 +325,36 @@ class kmeans
 		return $result;
 	}
 
-	private function set_ratios()
+	/***************************************************************************
+	 * set_point_ratio(int):void
+	 ***************************************************************************
+	 * Sets the ratio of a specified data point.
+	 * @param int $point_index
+	 */
+	private function set_point_ratio(int $point_index)
 	{
-		for ($i = 0; $i < $this->data_length; $i++)
-		{
-		    for ($j = 0; $j < $this->k - 1; $j++)
-                $this->clusters[$i][$j][2] = $this->clusters[$i][$j][1] / $this->clusters[$i][$j + 1][1];
-            $this->clusters[$i][$this->k - 1][2] = -1;
-        }
+		$this->clusters[$point_index][0][2] = $this->clusters[$point_index][0][1] / $this->clusters[$point_index][1][1];
 	}
 
+	/***************************************************************************
+	 * set_all_point_ratios():void
+	 ***************************************************************************
+	 * Sets all data point ratios.
+	 */
+	private function set_all_point_ratios()
+	{
+		for ($i = 0; $i < $this->data_length; $i++)
+			$this->set_point_ratio($i);
+	}
+
+	/***************************************************************************
+	 * index_max_ratio(int):int
+	 ***************************************************************************
+	 * Returns the index of the data point having the laregest ratio in the
+	 * specified cluster.
+	 * @param int $cluster_index
+	 * @return int $point_index
+	 */
 	private function index_max_ratio(int $cluster_index)
 	{
 		/// Initialize point index to first point in cluster
@@ -333,33 +369,55 @@ class kmeans
 				$point_index = $i;
 		return $point_index;
 	}
-	
+
+	/***************************************************************************
+	 * index_max_cluster():int
+	 ***************************************************************************
+	 * Returns the index of the largest cluster.
+	 * @return int $index
+	 */
 	private function index_max_cluster()
     {
-        $index = 0;
+        $index = 0;	// Cluster index
         for ($i = 1; $i < $this->k; $i++)
             if ($this->cluster_sizes[$index] < $this->cluster_sizes[$i])
                 $index = $i;
         return $index;
     }
 
+	/***************************************************************************
+	 * prune():void
+	 ***************************************************************************
+	 * Remove data points from clusters that are over capacity. The largest
+	 * cluster is selected in each iteration and the data point having the
+	 * largest ratio of the current distance to its assigned cluster to the next
+	 * closest cluster is placed in the next closest cluster. The data point's
+	 * ratio is updated. Pruning halts when all clusters are of optimal size.
+	 */
 	private function prune()
 	{
-	    $this->set_ratios();
-	    $iterations = 0;
-		while (!$this->check_sizes() && $iterations < 100)
+	    $this->set_all_point_ratios();
+	    $iterations = 0;	// Halts if too many iterations occur
+		while (!$this->check_sizes() && $iterations < 1000)
 		{
 		    $cluster_index = $this->index_max_cluster();
 		    $point_index = $this->index_max_ratio($cluster_index);
-		    if ($this->max_cluster_size <= $this->cluster_sizes[$cluster_index] && $this->clusters[$point_index][0][2] != -1)
+		    if ($this->max_cluster_size <= $this->cluster_sizes[$cluster_index])// && $this->clusters[$point_index][0][2] != -1)
 		    {
+				/// Decrement the largest cluster size and increment the size of
+				/// the cluster to receive the pruned data point
                 $this->cluster_sizes[$cluster_index]--;
                 $this->cluster_sizes[$this->clusters[$point_index][1][0]]++;
+
+				/// Move the data point's assigned cluster to the end of its
+				/// cluster queue
                 $temp = $this->clusters[$point_index][0];
                 for ($i = 0; $i < $this->k - 1; $i++)
                     $this->clusters[$point_index][$i] = $this->clusters[$point_index][$i + 1];
                 $this->clusters[$point_index][$this->k - 1] = $temp;
-                $this->clusters[$point_index][$this->k - 1][2] = -1;
+
+				/// Update ratio for the data point
+				$this->set_point_ratio($point_index);
             }
             else
                 break;
@@ -386,9 +444,7 @@ class kmeans
             $this->update_clusters();
             $iterations++;
         }
-        //print("before pruning\n".$this->to_string()."\n");
 		$this->prune();
-        //print("after pruning\n".$this->to_string()."\n");
         $clusters = array();
         for ($i = 0; $i < $this->data_length; $i++)
             $clusters[$i] = $this->clusters[$i][0][0];
@@ -407,18 +463,11 @@ for ($i = 0; $i < $data_length; $i++)
 		$data[$i][$j] = rand(0, getrandmax()) / getrandmax();
 }
 //$data = array([1], [3], [9], [0], [8], [2], [1], [8], [5], [2]);
+//$data = array([1], [2], [3], [4], [5], [6], [7], [8], [9], [10]);
 //$data_length = sizeof($data);
 //$dims = sizeof($data[0]);
-$k = 3;
+$k = 30;
 
 $kmeans   = new kmeans($k, $data);
 $clusters = $kmeans->run();
 print($kmeans->to_string());
-//for ($i = 0; $i < sizeof($data); $i++)
-//{
-//	print ("\nData[".$i."] = [".number_format($data[$i][0], 1));
-//	for ($j = 1; $j < $dims; $j++)
-//		print(" ".number_format($data[$i][$j], 1));
-//	print("] is in cluster ".$clusters[$i]);
-//}
-
