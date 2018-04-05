@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 
 use App\StudentData;
 use Auth;
+use App\User;
 
 //Importing laravel-permission models
 use Spatie\Permission\Models\Role;
@@ -68,12 +69,44 @@ class StudentDataController extends Controller {
 
 
 
-       // $title = $request['title'];
-        //$body = $request['body'];
-        
-        //$post = StudentData::create($request->only('title', 'body'));
 
-        //$post = StudentData::create($request['title']);
+
+        $user = new User;
+        $user->name = 'sam';
+        $user->password = '123456';
+        $user->email = 'cade3234er@c.com';
+        
+
+//$roles = Role::get();
+      //  
+        $user->save();
+        $user->assignRole(1); //Assigning role to user
+
+
+/*
+        $array = explode('|', $post->body);
+       // echo array_values($array)[0];
+        //echo array_values($array)[1];
+        $array2 = explode(',', $array[0]);
+         
+        $user = new App\User;
+        $user->name = array_values($array2)[0];
+        $user->password = '123456';
+        $user->email = array_values($array2)[1];
+        $user->save();
+
+
+         $array = explode('|', $post->body);
+       // echo array_values($array)[0];
+        //echo array_values($array)[1];
+        $array2 = explode(',', $array[0]);
+         
+        $user = new App\User();
+        $user->name = array_values($array2)[0];
+        $user->password = '123456';
+        $user->email = array_values($array2)[1];
+        $user->save();
+        */
 
 
 
