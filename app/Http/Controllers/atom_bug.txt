@@ -1,0 +1,20 @@
+C:\Users\Nathan\AppData\Local\atom\app-1.24.0\resources\app\node_modules\text-buffer\lib\screen-line-builder.js:329
+
+TypeError: Cannot read property 'length' of undefined
+    at ScreenLineBuilder.emitText (C:\Users\Nathan\AppData\Local\atom\app-1.24.0\resources\app\node_modules\text-buffer\lib\screen-line-builder.js:329:30)
+    at ScreenLineBuilder.buildScreenLines (C:\Users\Nathan\AppData\Local\atom\app-1.24.0\resources\app\node_modules\text-buffer\lib\screen-line-builder.js:141:22)
+    at DisplayLayer.getScreenLines (C:\Users\Nathan\AppData\Local\atom\app-1.24.0\resources\app\node_modules\text-buffer\lib\display-layer.js:643:41)
+    at TextEditorComponent.queryScreenLinesToRender (C:\Users\Nathan\AppData\Local\atom\app-1.24.0\resources\app\src\text-editor-component.js:867:57)
+    at TextEditorComponent.updateSyncBeforeMeasuringContent (C:\Users\Nathan\AppData\Local\atom\app-1.24.0\resources\app\src\text-editor-component.js:376:16)
+    at TextEditorComponent.updateSync (C:\Users\Nathan\AppData\Local\atom\app-1.24.0\resources\app\src\text-editor-component.js:274:16)
+    at TextEditorComponent.didShow (C:\Users\Nathan\AppData\Local\atom\app-1.24.0\resources\app\src\text-editor-component.js:1457:18)
+    at TextEditorComponent.didAttach (C:\Users\Nathan\AppData\Local\atom\app-1.24.0\resources\app\src\text-editor-component.js:1424:20)
+    at HTMLElement.attachedCallback (C:\Users\Nathan\AppData\Local\atom\app-1.24.0\resources\app.asar\src\text-editor-element.js:41:25)
+    at HTMLElement.PaneElement.activeItemChanged (C:\Users\Nathan\AppData\Local\atom\app-1.24.0\resources\app.asar\src\pane-element.js:156:24)
+    at Function.module.exports.Emitter.simpleDispatch (C:\Users\Nathan\AppData\Local\atom\app-1.24.0\resources\app\node_modules\event-kit\lib\emitter.js:25:20)
+    at Emitter.module.exports.Emitter.emit (C:\Users\Nathan\AppData\Local\atom\app-1.24.0\resources\app\node_modules\event-kit\lib\emitter.js:141:34)
+    at Pane.setActiveItem (C:\Users\Nathan\AppData\Local\atom\app-1.24.0\resources\app\src\pane.js:435:26)
+    at Pane.activateItemAtIndex (C:\Users\Nathan\AppData\Local\atom\app-1.24.0\resources\app\src\pane.js:558:23)
+    at Pane.activatePreviousItem (C:\Users\Nathan\AppData\Local\atom\app-1.24.0\resources\app\src\pane.js:522:18)
+    at Pane.removeItem (C:\Users\Nathan\AppData\Local\atom\app-1.24.0\resources\app\src\pane.js:694:20)
+    at Pane.destroyItem (C:\Users\Nathan\AppData\Local\atom\app-1.24.0\resources\app\src\pane.js:775:16)
