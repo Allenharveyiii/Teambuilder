@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateStudentDatasTable extends Migration
+class CreateCoursesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,21 +13,25 @@ class CreateStudentDatasTable extends Migration
      */
     public function up()
     {
-        Schema::create('student_datas', function (Blueprint $table) {
+        Schema::enableForeignKeyConstraints();
+        Schema::create('courses', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('title');
-            $table->string('body');
+            $table->string('name');
+            $table->char('CRN',5);
+            $table->integer('FacultyID')->unsigned();
+            $table->foreign('FacultyID')->references('id')->on('users');
             $table->timestamps();
         });
     }
 
     /**
      * Reverse the migrations.
+     *esefeddd
      *
      * @return void
      */
     public function down()
     {
-        Schema::dropIfExists('student_datas');
+        Schema::dropIfExists('courses');
     }
 }

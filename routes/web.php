@@ -21,6 +21,8 @@ Route::get('/', 'StudentDataController@index')->name('home');
 
 Route::resource('users', 'UserController');
 
+Route::resource('courses','coursesController');
+
 
 Route::resource('roles', 'RoleController');
 
