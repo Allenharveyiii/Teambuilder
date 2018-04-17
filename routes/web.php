@@ -11,8 +11,8 @@
 |
 */
 
-Route::get("/", function () {
-    return view("welcome");
+Route::get('/', function () {
+    return view('welcome');
 });
 
 Auth::routes();
@@ -21,8 +21,7 @@ Route::get('/', 'StudentDataController@index')->name('home');
 
 Route::resource('users', 'UserController');
 
-Route::resource('courses','coursesController');
-
+Route::resource('course','courseController');
 
 Route::resource('roles', 'RoleController');
 
@@ -30,6 +29,4 @@ Route::resource('permissions', 'PermissionController');
 
 Route::resource('studentdata', 'StudentDataController');
 
-
-
-
+Route::resource('clusters', 'ClusterController@get_teams');

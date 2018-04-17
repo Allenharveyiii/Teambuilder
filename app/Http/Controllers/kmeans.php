@@ -453,21 +453,21 @@ class kmeans
 }
 
 /// Driver
-$data_length = 100;
-$dims = 2;
-$data = array();
-for ($i = 0; $i < $data_length; $i++)
-{
-	$data[$i] = array();
-	for ($j = 0; $j < $dims; $j++)
-		$data[$i][$j] = rand(0, getrandmax()) / getrandmax();
-}
+//$data_length = 100;
+//$dims = 2;
+//$data = array();
+//for ($i = 0; $i < $data_length; $i++)
+//{
+//	$data[$i] = array();
+//	for ($j = 0; $j < $dims; $j++)
+//		$data[$i][$j] = rand(0, getrandmax()) / getrandmax();
+//}
 //$data = array([1], [3], [9], [0], [8], [2], [1], [8], [5], [2]);
 //$data = array([1], [2], [3], [4], [5], [6], [7], [8], [9], [10]);
 //$data_length = sizeof($data);
 //$dims = sizeof($data[0]);
-$k = 30;
+//$k = 30;
 
-$kmeans   = new kmeans($k, $data);
-$clusters = $kmeans->run();
-print($kmeans->to_string());
+//$kmeans   = new kmeans($k, $data);
+//$clusters = $kmeans->run();
+//print($kmeans->to_string());

@@ -3,11 +3,11 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\courses;
+use App\Course;
 use Session;
 use Auth;
 
-class coursesController extends Controller
+class CourseController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -17,11 +17,11 @@ class coursesController extends Controller
     public function __construct() {
         $this->middleware(['auth', 'clearance'])->except('index', 'show');
     }
+
     public function index()
     {
-        $course = courses::orderby('name');
-         return view('courses.index',compact('course'));
-
+        $course = Course::orderby('name');
+         return view('course.index',compact('course'));
     }
 
     /**
@@ -31,7 +31,7 @@ class coursesController extends Controller
      */
     public function create()
     {
-        return view('courses.create');
+        return view('course.create');
     }
 
     /**
@@ -42,24 +42,12 @@ class coursesController extends Controller
      */
     public function store(Request $request)
     {
-      $this-> validate($request, [
-      'name'=>'required',
-      'CRN'=>'required|min:5|max:5',
-      'FacultyID'=>'Required'
-      ]);
-
-      $name =$request['name'];
-      $CRN =$request['CRN'];
-      $FacID =$request['FacultyID'];
-
-      $course = courses::create($request->only('name','CRN','FacultyID'));
-
-      return redirect()->route('courses.index')
-          ->with('flash_message','Courses '.$course->title.'created');
-
-
-
-
+        $this-> validate($request, ['name'=>'required', 'CRN'=>'required|min:5|max:5', 'FacultyID'=>'Required']);
+        $name =$request['name'];
+        $CRN =$request['CRN'];
+        $FacID =$request['FacultyID'];
+        $course = Course::create($request->only('name','CRN','FacultyID'));
+        return redirect()->route('course.index')->with('flash_message','Courses '.$course->title.'created');
     }
 
     /**
@@ -70,10 +58,8 @@ class coursesController extends Controller
      */
     public function show($id)
     {
-        //
-        $course = courses::findorFail($id);
-
-        return view('courses.show',compact('course'));
+        $course = Course::findorFail($id);
+        return view('course.show',compact('course'));
     }
 
     /**
@@ -84,9 +70,8 @@ class coursesController extends Controller
      */
     public function edit($id)
     {
-        //
-        $course = courses::findOrFail($id);
-        return view('courses.edit',compact('course'));
+        $course = Course::findOrFail($id);
+        return view('course.edit',compact('course'));
     }
 
     /**
@@ -98,22 +83,13 @@ class coursesController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $this-> validate($request, [
-            'name'=>'required',
-            'CRN'=>'required|min:5|max:5',
-            'FacultyID'=>'Required'
-        ]);
-
-        $course =courses::findOrFail($id);
+        $this-> validate($request, ['name'=>'required', 'CRN'=>'required|min:5|max:5', 'FacultyID'=>'Required']);
+        $course =Course::findOrFail($id);
         $course->name = $request->input('name');
         $course->CRN = $request->input('CRN');
         $course->FacultyID = $request ->input('FacultyID');
         $course->save();
-
-        return redirect()->route('courses.show',
-            $course->id)->with('flash_message',
-            'Courses, '. $course->name.' updated');
-
+        return redirect()->route('course.show', $course->id)->with('flash_message', 'Courses, '. $course->name.' updated');
     }
 
     /**
@@ -124,11 +100,8 @@ class coursesController extends Controller
      */
     public function destroy($id)
     {
-        $course =courses::findOrFail($id);
+        $course =Course::findOrFail($id);
         $course->delete();
-
-        return redirect()->route('posts.index')->
-            with('flash_message', 'Courses successfully deleted');
+        return redirect()->route('posts.index')->with('flash_message', 'Courses successfully deleted');
     }
-
 }

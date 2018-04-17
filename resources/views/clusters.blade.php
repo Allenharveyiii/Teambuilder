@@ -81,16 +81,37 @@
         <div class="title m-b-md">
             Clusters
         </div>
+        <!--
+            -------------------------
+            Cluster Index   | Student
+            -------------------------
+            0               | Student
+            0               | Student
+            ...               ...
+            1               | Student
+            1               | Student
+            ...               ...
+            ...               ...
+            k-1             | Student
+            k-1             | Student
+            -------------------------
+        -->
         <table class="table">
             <tr>
-                <th>x</th><th>y</th>
+                <th>Cluster Index</th><th>Student</th>
             </tr>
-            @foreach($clusters as $cluster)
+            @for($i = 0; $i < $k_teams; $i++)
                 <tr>
-                    <td>{{$cluster[0]}}</td>
-                    <td>{{$cluster[1]}}</td>
+                    <td>{{$i}}</td>
+                    <td>
+                        @for($j = 0; $j < $length; $j++)
+                            @if ($i == $cluster[$j])
+                                {{$student[$j]}}
+                            @endif
+                        @endfor
+                    </td>
                 </tr>
-            @endforeach
+            @endfor
         </table>
     </div>
 </div>
