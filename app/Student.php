@@ -10,8 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Student extends User
 {
-    protected $fillable = [];
-    protected $hidden = [];
+
 
     public function courses() {
         return $this->hasMany(Course::class);

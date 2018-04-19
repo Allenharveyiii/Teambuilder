@@ -14,7 +14,7 @@ class CreateCoursesTable extends Migration
     public function up()
     {
         Schema::enableForeignKeyConstraints();
-        Schema::create('course', function (Blueprint $table) {
+        Schema::create('courses', function (Blueprint $table) {
             $table->increments('id');
             $table->string('name');
             $table->char('CRN',5);
@@ -26,12 +26,11 @@ class CreateCoursesTable extends Migration
 
     /**
      * Reverse the migrations.
-     *esefeddd
      *
      * @return void
      */
     public function down()
     {
-        Schema::dropIfExists('course');
+        Schema::dropIfExists('courses');
     }
 }

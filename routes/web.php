@@ -17,16 +17,15 @@ Route::get('/', function () {
 
 Auth::routes();
 
-Route::get('/', 'StudentDataController@index')->name('home');
-
 Route::resource('users', 'UserController');
 
-Route::resource('course','courseController');
+Route::resource('course','CourseController');
 
 Route::resource('roles', 'RoleController');
 
 Route::resource('permissions', 'PermissionController');
 
 Route::resource('studentdata', 'StudentDataController');
+
 
 Route::resource('clusters', 'ClusterController@get_teams');
