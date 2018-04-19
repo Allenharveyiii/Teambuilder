@@ -104,4 +104,17 @@ class CourseController extends Controller
         $course->delete();
         return redirect()->route('posts.index')->with('flash_message', 'Courses successfully deleted');
     }
+
+    public function get_teams($id)
+    {
+        $course   = Course::findOrFail($id);  //dd($course);
+        $k_teams  = request('k_teams');
+        $students = $course->get_students();
+        $student_data = [];
+        foreach ($students as $student)
+            $student_data[] = $student->data_to_array();
+        $kmns  = new kmeans($k_teams, $student_data);
+        $teams = $kmns->run();
+        return view('clusters', compact('k_teams','students','teams'));
+    }
 }

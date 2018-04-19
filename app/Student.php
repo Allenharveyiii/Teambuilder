@@ -10,15 +10,15 @@ use Illuminate\Database\Eloquent\Model;
 
 class Student extends User
 {
-    protected $fillable = [];
-    protected $hidden = [];
-
     public function courses() {
         return $this->hasMany(Course::class);
     }
 
     public function get_courses() {
         $course_students = CourseStudent::get()->where('studentID', $this->id);
+        foreach ($course_students as $cs)
+            $courses[] = $cs->get_course();
+        return $courses;
     }
 
     public function get_instructor(Course $course) {
@@ -31,5 +31,24 @@ class Student extends User
         foreach ($courses as $course)
             $instructors[] = $course->get_instructor();
         return $instructors;
+    }
+
+    public function data_to_array() {
+        switch ($this->concentration) {
+            case 'CS':
+                //TODO
+                break;
+            case 'IS':
+                //TODO
+                break;
+            case 'IT':
+                //TODO
+                break;
+            default:
+                //TODO
+                break;
+        }
+        $data = [$this->gpa, $this->concentration, $this->schedule];
+        return $data;
     }
 }

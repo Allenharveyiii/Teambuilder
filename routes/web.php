@@ -11,22 +11,12 @@
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
-
+Route::get('/',function (){return view('welcome');});
 Auth::routes();
-
+Route::post('/clusters/{id}', 'CourseController@get_teams');
 Route::get('/', 'StudentDataController@index')->name('home');
-
 Route::resource('users', 'UserController');
-
-Route::resource('course','courseController');
-
+Route::resource('course', 'courseController');
 Route::resource('roles', 'RoleController');
-
 Route::resource('permissions', 'PermissionController');
-
 Route::resource('studentdata', 'StudentDataController');
-
-Route::resource('clusters', 'ClusterController@get_teams');

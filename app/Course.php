@@ -11,6 +11,7 @@ class Course extends Model
 {
     protected $fillable = ['name', 'CRN','FacultyID',];
     protected $hidden = [];
+    protected $table = "course";
 
     /// COURSE RELATIONSHIPS
     public function course_student() {
