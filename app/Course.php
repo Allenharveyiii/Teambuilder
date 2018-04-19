@@ -35,4 +35,6 @@ class Course extends Model
         $course_students = CourseStudent::get()->where('courseID', $this->id);
         return $course_students->get_students();
     }
+
+
 }

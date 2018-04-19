@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Course;
+use App\User;
+use App\CourseStudent;
 use Session;
 use Auth;
 
@@ -20,7 +22,7 @@ class CourseController extends Controller
 
     public function index()
     {
-        $course = Course::orderby('name');
+        $course = Course::orderby('name')->paginate(10);
          return view('course.index',compact('course'));
     }
 
@@ -42,12 +44,38 @@ class CourseController extends Controller
      */
     public function store(Request $request)
     {
-        $this-> validate($request, ['name'=>'required', 'CRN'=>'required|min:5|max:5', 'FacultyID'=>'Required']);
-        $name =$request['name'];
-        $CRN =$request['CRN'];
-        $FacID =$request['FacultyID'];
-        $course = Course::create($request->only('name','CRN','FacultyID'));
-        return redirect()->route('course.index')->with('flash_message','Courses '.$course->title.'created');
+        $this->validate($request, [
+            'name' => 'required',
+            'CRN' => 'required|min:5|max:5',
+            'studentlist' => 'required'
+        ]);
+
+        $name = $request['name'];
+        $CRN = $request['CRN'];
+        $request['FacultyID'] = $request->user()->id;
+        $course = course::create($request->only('name', 'CRN', 'FacultyID'));
+        $studentlist = file_get_contents($request->file('studentlist'));
+        $lines = explode('|', $studentlist);
+        foreach ($lines as $line) {
+
+            $column = explode(',', $line);
+            $user = new User();
+
+            $user->name = array_values($column)[0];
+            $user->email = array_values($column)[1];
+            $user->password = array_values($column)[2];
+            $user->save();
+            $user->assignRole(3);
+            $enrollstudent = new CourseStudent();
+            $enrollstudent->studentID = $user->id;
+            $enrollstudent->courseID = $course->id;
+            $enrollstudent->save();
+        }
+        unset($column);
+        unset($line);
+
+        return redirect()->route('course.index')
+            ->with('flash_message', 'Courses ' . $course->name);
     }
 
     /**
@@ -83,11 +111,10 @@ class CourseController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $this-> validate($request, ['name'=>'required', 'CRN'=>'required|min:5|max:5', 'FacultyID'=>'Required']);
+        $this-> validate($request, ['name'=>'required', 'CRN'=>'required|min:5|max:5']);
         $course =Course::findOrFail($id);
         $course->name = $request->input('name');
         $course->CRN = $request->input('CRN');
-        $course->FacultyID = $request ->input('FacultyID');
         $course->save();
         return redirect()->route('course.show', $course->id)->with('flash_message', 'Courses, '. $course->name.' updated');
     }
