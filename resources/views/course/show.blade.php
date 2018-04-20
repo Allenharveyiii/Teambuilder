@@ -8,17 +8,24 @@
 
     <div class="container">
 
-        <h1 align="center">
-            this is where you will be able to remove students from a class
-        </h1>
+
 
         <h1>{{ $course->name }}</h1>
+        @foreach ($instructor as $line)
+        <h5>{{$line->name }}</h5>
+        @endforeach
         <hr>
-        <p class="lead">{{ $course->CRN }}
-
-        </p>
 
 
+
+        <h3 >Students Enrolled</h3>
+        <div>
+        <ul class="list-group">
+        @foreach ($studentroster as $student)
+                <li class="list-group-item">{{ $student->name }}</li>
+        @endforeach
+        </ul>
+        <div  class="container">
         <!-- CLUSTERING WITH K-MEANS -->
         <form action="../clusters" method="post">
             {{csrf_field()}}

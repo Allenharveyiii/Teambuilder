@@ -87,7 +87,12 @@ class CourseController extends Controller
     public function show($id)
     {
         $course = Course::findorFail($id);
-        return view('course.show',compact('course'));
+        $studentroster = $course->students()->get();
+        $instructor = $course->instructor()->get();
+
+
+
+        return view('course.show',compact('course', 'studentroster','instructor'));
     }
 
     /**
