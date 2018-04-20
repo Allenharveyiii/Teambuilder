@@ -8,6 +8,7 @@ class Course extends Model
 {
     protected $fillable = ['name', 'CRN','FacultyID',];
     protected $hidden = [];
+    protected $table = "course";
 
 
     /// RELATIONSHIPS TO THE STUDENT MODEL( USES THE USER TABLE)

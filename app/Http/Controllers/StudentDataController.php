@@ -4,17 +4,12 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-
 use App\StudentData;
 use Auth;
 use App\User;
-
-//Importing laravel-permission models
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 use Session;
-
-
 
 class StudentDataController extends Controller {
 
@@ -27,12 +22,8 @@ class StudentDataController extends Controller {
      *
      * @return \Illuminate\Http\Response
      */
-
     public function index() {
-
-        $studentdata = StudentData::orderby('id', 'desc')->paginate(5); //show only 5 items at a time in descending order
-
-        
+        $studentdata = StudentData::orderby('id', 'desc')->paginate(10); //show only 5 items at a time in descending order
         return view('studentdata.index', compact('studentdata'));
     }
 
@@ -52,68 +43,43 @@ class StudentDataController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request) { 
-
-    //Validating title and body field
-        $this->validate($request, [
-            'title'=>'required|max:100',
-            'body' =>'required|file:txt'
+        //Validating title and body field
+        $this->validate($request, ['title'=>'required|max:100', 'body' =>'required|file:txt'
             //'body' =>'required|max:100'
             ]);
-
         $post = new StudentData;
-
-
         $post->title = $request->input('title');
         $post->body = file_get_contents($request->file('body'));
         $post->save();
-
-
-
-
-
         $user = new User;
         $user->name = 'sam';
         $user->password = '123456';
         $user->email = 'cade3234er@c.com';
-        
-
-//$roles = Role::get();
-      //  
+        //$roles = Role::get();
         $user->save();
         $user->assignRole(1); //Assigning role to user
-
-
-/*
+        /*
         $array = explode('|', $post->body);
-       // echo array_values($array)[0];
+        //echo array_values($array)[0];
         //echo array_values($array)[1];
         $array2 = explode(',', $array[0]);
-         
         $user = new App\User;
         $user->name = array_values($array2)[0];
         $user->password = '123456';
         $user->email = array_values($array2)[1];
         $user->save();
-
-
-         $array = explode('|', $post->body);
-       // echo array_values($array)[0];
+        $array = explode('|', $post->body);
+        //echo array_values($array)[0];
         //echo array_values($array)[1];
         $array2 = explode(',', $array[0]);
-         
         $user = new App\User();
         $user->name = array_values($array2)[0];
         $user->password = '123456';
         $user->email = array_values($array2)[1];
         $user->save();
         */
-
-
-
-    //Display a successful message upon save
-        return redirect()->route('studentdata.index')
-            ->with('flash_message', 'Class,
-             '. $post->title.' created');
+        //Display a successful message upon save
+        return redirect()->route('studentdata.index')->with('flash_message', 'Class,'. $post->title.' created');
     }
 
     /**
@@ -124,7 +90,6 @@ class StudentDataController extends Controller {
      */
     public function show($id) {
         $post = StudentData::findOrFail($id); //Find post of id = $id
-
         return view ('studentdata.show', compact('post'));
     }
 
@@ -136,7 +101,6 @@ class StudentDataController extends Controller {
      */
     public function edit($id) {
         $post = StudentData::findOrFail($id);
-
         return view('studentdata.edit', compact('post'));
     }
 
@@ -148,20 +112,12 @@ class StudentDataController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id) {
-        $this->validate($request, [
-            'title'=>'required|max:100',
-            'body' =>'required|file:txt'
-        ]);
-
+        $this->validate($request, ['title'=>'required|max:100','body' =>'required|file:txt']);
         $post = StudentData::findOrFail($id);
         $post->title = $request->input('title');
         $post->body = $request->input('body');
         $post->save();
-
-        return redirect()->route('studentdata.show', 
-            $post->id)->with('flash_message', 
-            'Article, '. $post->title.' updated');
-
+        return redirect()->route('studentdata.show', $post->id)->with('flash_message', 'Article, '. $post->title.' updated');
     }
 
     /**
@@ -173,10 +129,6 @@ class StudentDataController extends Controller {
     public function destroy($id) {
         $post = StudentData::findOrFail($id);
         $post->delete();
-
-        return redirect()->route('studentdata.index')
-            ->with('flash_message',
-             'Article successfully deleted');
-
+        return redirect()->route('studentdata.index')->with('flash_message', 'Article successfully deleted');
     }
 }

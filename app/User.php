@@ -27,7 +27,6 @@ class User extends Authenticatable
     protected $hidden = [
         'password', 'remember_token',
     ];
-    // tells the children what table to uses
 
     public function setPasswordAttribute($password)
     {

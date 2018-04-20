@@ -100,13 +100,13 @@
             <tr>
                 <th>Cluster Index</th><th>Student</th>
             </tr>
-            @for($i = 0; $i < $k_teams; $i++)
+            @for ($i = 0; $i < $k_teams; $i++)
                 <tr>
                     <td>{{$i}}</td>
                     <td>
-                        @for($j = 0; $j < $length; $j++)
-                            @if ($i == $cluster[$j])
-                                {{$student[$j]}}
+                        @for ($j = 0; $j < sizeof($teams); $j++)
+                            @if ($i == $teams[$j])
+                                {{$students[$j]}}
                             @endif
                         @endfor
                     </td>

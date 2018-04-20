@@ -10,17 +10,6 @@
         <hr>
         {!! Form::open(['method' => 'DELETE', 'route' => ['studentdata.destroy', $post->id] ]) !!}
         <a href="{{ url()->previous() }}" class="btn btn-primary">Back</a>
-        <hr>
-
-        <!-- CLUSTERING WITH K-MEANS -->
-        <form action="../clusters" method="post">
-            {{csrf_field()}}
-            <div class="form-group">
-                <label for="k_teams">Number of teams</label>
-                <input id="k_teams" name="k_teams" type="text" class="form-control" placeholder="4" required autofocus/>
-                <button type="submit" class="btn btn-primary">Build Teams</button>
-            </div>
-        </form>
 
         @can('Edit Post')
             <a href="{{ route('studentdata.edit', $post->id) }}" class="btn btn-info" role="button">Edit</a>
@@ -29,6 +18,18 @@
             {!! Form::submit('Delete', ['class' => 'btn btn-danger']) !!}
         @endcan
         {!! Form::close() !!}
+        <hr>
+
+        <!-- CLUSTERING WITH K-MEANS: REDIRECTS TO ../clusters -->
+        <form action="/clusters/{{$post->id}}" method="post">
+            {{csrf_field()}}
+            <div class="form-group">
+                <label for="k_teams">Number of teams</label>
+                <input id="k_teams" name="k_teams" type="text" class="form-control" placeholder="4" required autofocus/>
+                <input type="hidden" id="courseID" name="courseID" value="{{$post->id}}" required autofocus/>
+                <button type="submit" class="btn btn-primary">Build Teams</button>
+            </div>
+        </form>
     </div>
     @endrole
 
