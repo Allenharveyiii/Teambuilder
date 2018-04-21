@@ -5,19 +5,12 @@
 @section('content')
 
     @role('Professor') {{-- Laravel-permission blade helper --}}
-
     <div class="container">
-
-
-
         <h1>{{ $course->name }}</h1>
         @foreach ($instructor as $line)
         <h5>{{$line->name }}</h5>
         @endforeach
         <hr>
-
-
-
         <h3 >Students Enrolled</h3>
         <div>
         <ul class="list-group">
@@ -27,7 +20,7 @@
         </ul>
         <div  class="container">
         <!-- CLUSTERING WITH K-MEANS -->
-        <form action="../clusters" method="post">
+        <form action="../clusters/{{$course->id}}" method="post">
             {{csrf_field()}}
             <div class="form-group">
                 <label for="k_teams">Number of teams</label>

@@ -29,13 +29,8 @@
                 <br>
                 {{ Form::label('CRN', 'CRN') }}
                 {{ Form::text('CRN', null, array('class' => 'form-control')) }}
-
-
                 {{ Form::label('studentlist', 'Upload class list') }}
-
-
                 {{ Form::file('studentlist', null, array('class' => 'form-control')) }}
-
                 <br>
                 {{ Form::submit('Create Class', array('class' => 'btn btn-success btn-lg btn-block')) }}
                 {{ Form::close() }}

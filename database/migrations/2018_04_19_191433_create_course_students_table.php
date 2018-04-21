@@ -18,11 +18,7 @@ class CreateCourseStudentsTable extends Migration
             $table->integer('studentID')->unsigned();
             $table->foreign('studentID')->references('id')->on('users');
             $table->integer('courseID')->unsigned();
-<<<<<<< HEAD:database/migrations/2018_04_10_015117_create_courses_students_table.php
-            $table->foreign('courseID')->references('id')->on('course');
-=======
             $table->foreign('courseID')->references('id')->on('courses');
->>>>>>> Clustering:database/migrations/2018_04_19_191433_create_course_students_table.php
             $table->timestamps();
         });
     }
